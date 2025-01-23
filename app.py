@@ -1,24 +1,35 @@
 import streamlit as st
+import json
 
 # Title and description of the app
 st.set_page_config(page_title="Sample Chatbot", page_icon="🤖", layout="centered")
-st.title("Welcome to the Sample Chatbot")
-st.write("Interact with the chatbot below. Ask anything!")
+st.title("Sample Chatbot")
 
-# Chatbot interaction
+# Load JSON data
+with open("college_data.json", "r") as file:
+    college_data = json.load(file)
+
 # A placeholder for chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Function to simulate a chatbot response
+# Function to fetch chatbot response based on user query
 def get_chatbot_response(user_input):
-    # A simple response for demonstration
-    responses = {
-        "hello": "Hi there! How can I help you today?",
-        "how are you?": "I'm just a bot, but I'm here to assist you!",
-        "what is your name?": "I'm SampleBot, your virtual assistant!",
-    }
-    return responses.get(user_input.lower(), "I'm sorry, I didn't understand that.")
+    user_input = user_input.lower()
+    
+    # Simple keyword-based matching
+    if "visiting hours" in user_input or "working hours" in user_input:
+        return f"Visiting hours are: {college_data['visiting_hours']['monday_to_friday']}"
+    elif "contact" in user_input or "phone" in user_input:
+        return f"Contact Information: Phone - {college_data['contact_information']['phone_number']}, Email - {college_data['contact_information']['email']}"
+    elif "address" in user_input or "location" in user_input:
+        return f"Address: {college_data['contact_information']['address']}"
+    elif "notices" in user_input:
+        return "Here are the latest notices:\n" + "\n".join([f"- {notice}" for notice in college_data["notices"]])
+    elif "examination centre" in user_input or "exam" in user_input:
+        return f"Examination Centre Email: {college_data['examination_centre']['email']}"
+    else:
+        return "I couldn't find the answer to that in the information I have. Please try asking something else!"
 
 # User input form
 with st.form("chat_form"):
@@ -42,4 +53,4 @@ for message in st.session_state.messages:
         st.write(f"**SampleBot:** {message['bot']}")
 
 # Footer
-st.write("This is a sample chatbot application created with Streamlit.")
+st.write("This is a sample chatbot application powered by DistilBERT and Streamlit.")
