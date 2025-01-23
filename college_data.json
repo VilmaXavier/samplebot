@@ -1,0 +1,24 @@
+{
+    "college_name": "St. Xavier's College, Mumbai",
+    "contact_information": {
+      "phone_number": "+91-22-22620661",
+      "email": "examination.centre@xaviers.edu",
+      "address": "5, Mahapalika Marg, Dhobi Talao, Mumbai, Maharashtra 400001, India"
+    },
+    "visiting_hours": {
+      "monday_to_friday": "10:30 AM to 12:30 PM"
+    },
+    "notices": [
+      "Change of Holiday",
+      "Attendance Defaulters List up to 31st August 2024 for Odd Semester Exam October 2024",
+      "Notification for Change in Nomenclature from BMS (Bachelor of Management Studies) to Bachelor of Commerce in Management Studies",
+      "Ph.D. Degree in Economics Notice",
+      "Ph.D. Degree in Economics Notice Application",
+      "Certificate Course in Environmental Forensics",
+      "Certificate Course in Forensic Biology"
+    ],
+    "examination_centre": {
+      "email": "examination.centre@xaviers.edu"
+    }
+  }
+  
