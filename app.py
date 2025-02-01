@@ -68,9 +68,15 @@ class AudioProcessor(AudioProcessorBase):
 
         return frame  # Return unchanged audio frame
 
-# Speech-to-Text function using WebRTC
+# Speech-to-Text function using WebRTC (Fix: Disable Camera)
 def speech_to_text():
-    webrtc_streamer(key="speech", mode=WebRtcMode.SENDRECV, audio_processor_factory=AudioProcessor)
+    webrtc_streamer(
+        key="speech", 
+        mode=WebRtcMode.SENDRECV,
+        audio_processor_factory=AudioProcessor,
+        video_processor_factory=None,  # 🔹 Ensures NO Camera Access
+        media_stream_constraints={"video": False, "audio": True}  # 🔹 Captures ONLY Audio
+    )
 
     # Display transcribed text
     if "transcribed_text" in st.session_state:
