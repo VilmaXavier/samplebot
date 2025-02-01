@@ -1,8 +1,7 @@
 streamlit
-transformers
-torch
-numpy
+streamlit-webrtc
+speechrecognition
 pyttsx3
-SpeechRecognition
-pyaudio
-
+pydub
+numpy
+av
