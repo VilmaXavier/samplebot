@@ -2,6 +2,9 @@ import streamlit as st
 import json
 import pyttsx3
 import speech_recognition as sr
+import numpy as np
+import av
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, AudioProcessorBase
 
 # Initialize TTS engine
 def init_tts_engine():
@@ -22,23 +25,6 @@ def speak_text(text):
             tts_engine.runAndWait()
     except Exception as e:
         st.error(f"Speech error: {e}")
-
-# Speech-to-Text function
-def speech_to_text():
-    recognizer = sr.Recognizer()
-    try:
-        with sr.Microphone() as source:
-            st.toast("Listening... Speak now")
-            recognizer.adjust_for_ambient_noise(source, duration=0.5)
-            audio = recognizer.listen(source, timeout=4, phrase_time_limit=3)
-            text = recognizer.recognize_google(audio)
-            return text
-    except sr.UnknownValueError:
-        st.error("Could not understand audio. Please try again.")
-        return ""
-    except sr.RequestError as e:
-        st.error(f"Could not request results from Google Speech Recognition service; {e}")
-        return ""
 
 # Load JSON data
 @st.cache_data
@@ -61,10 +47,40 @@ def get_chatbot_response(user_input, college_data):
     
     return "I couldn't find an answer. Please rephrase."
 
+# WebRTC Audio Processor for Speech-to-Text
+class AudioProcessor(AudioProcessorBase):
+    def __init__(self):
+        self.recognizer = sr.Recognizer()
+
+    def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
+        audio = np.array(frame.to_ndarray())  # Convert audio frame to NumPy array
+        
+        # Convert audio to speech_recognition-compatible format
+        audio_data = sr.AudioData(audio.tobytes(), frame.sample_rate, 2)
+        
+        try:
+            text = self.recognizer.recognize_google(audio_data)
+            st.session_state["transcribed_text"] = text
+        except sr.UnknownValueError:
+            st.warning("Could not understand audio.")
+        except sr.RequestError as e:
+            st.error(f"Speech Recognition API error: {e}")
+
+        return frame  # Return unchanged audio frame
+
+# Speech-to-Text function using WebRTC
+def speech_to_text():
+    webrtc_streamer(key="speech", mode=WebRtcMode.SENDRECV, audio_processor_factory=AudioProcessor)
+
+    # Display transcribed text
+    if "transcribed_text" in st.session_state:
+        return st.session_state["transcribed_text"]
+    return ""
+
 # Main Streamlit app
 def main():
     st.set_page_config(page_title="College Chatbot", page_icon="🤖", layout="centered")
-    st.title("College  Chatbot")
+    st.title("College Chatbot with Speech Recognition")
 
     # Load college data
     college_data = load_college_data()
@@ -73,18 +89,14 @@ def main():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Input area with microphone
-    col1, col2 = st.columns([0.85, 0.15])
-    with col1:
-        user_input = st.text_input("Your message:", placeholder="Type or click mic to speak")
-    with col2:
-        mic_button = st.button("🎤")
+    # Speech input via WebRTC
+    st.subheader("🎤 Speak your message:")
+    user_input = speech_to_text()
 
-    # Handle speech input when mic button is clicked
-    if mic_button:
-        user_input = speech_to_text()
+    # Text input as fallback
+    user_input = st.text_input("Or type your message:", user_input)
 
-    # Process input if user input is available
+    # Process input if available
     if user_input:
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": user_input})
@@ -106,6 +118,5 @@ def main():
                 if st.button("🔊", key=f"speak_{idx}"):
                     speak_text(message['content'])
 
-   
 if __name__ == "__main__":
     main()
