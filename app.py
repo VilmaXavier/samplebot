@@ -29,7 +29,7 @@ def speak_text(text):
 # Load JSON data
 @st.cache_data
 def load_college_data():
-    with open("college_data1.json", "r") as file:  # Change the filename here
+    with open("college_data1.json", "r") as file:
         return json.load(file)
 
 # Chatbot response function
@@ -89,14 +89,19 @@ def main():
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Speech input via WebRTC
-    st.subheader("🎤 Speak your message:")
-    user_input = speech_to_text()
+    # UI: Text input with microphone button
+    col1, col2 = st.columns([0.85, 0.15])
+    with col1:
+        user_input = st.text_input("Your message:", placeholder="Type or click mic to speak")
+    with col2:
+        mic_button = st.button("🎤")
 
-    # Text input as fallback
-    user_input = st.text_input("Or type your message:", user_input)
+    # Handle speech input when mic button is clicked
+    if mic_button:
+        st.subheader("🎤 Speak now:")
+        user_input = speech_to_text()
 
-    # Process input if available
+    # Process input if user input is available
     if user_input:
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": user_input})
